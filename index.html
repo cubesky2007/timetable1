@@ -39,13 +39,21 @@
             margin-bottom: 20px;
             font-weight: 500;
         }
-        .schedule-selector {
+        .selector-group {
             margin-bottom: 25px;
+            display: flex;
+            flex-direction: column; /* Stack selectors vertically */
+            gap: 15px;
+            align-items: center;
+        }
+        .schedule-selector, .bus-stop-selector {
             display: flex;
             justify-content: center;
             gap: 20px;
+            width: 100%;
+            max-width: 400px;
         }
-        .schedule-selector label {
+        .schedule-selector label, .bus-stop-selector label {
             display: flex;
             align-items: center;
             font-size: 1.1rem; /* 18px */
@@ -53,7 +61,7 @@
             color: #2d3748;
             cursor: pointer;
         }
-        .schedule-selector input[type="radio"] {
+        .schedule-selector input[type="radio"], .bus-stop-selector input[type="radio"] {
             margin-right: 8px;
             transform: scale(1.3); /* 大きめのラジオボタン */
             accent-color: #3182ce; /* ハイライトカラー */
@@ -85,7 +93,7 @@
         }
         .bus-item {
             display: flex;
-            flex-direction: column; /* Allow vertical stacking for arrival time */
+            flex-direction: column; /* Allow vertical stacking for arrival/destination */
             align-items: flex-start; /* Align content to start */
             padding: 12px 15px;
             background-color: #f7fafc;
@@ -93,7 +101,9 @@
             border: 1px solid #e2e8f0;
             transition: all 0.2s ease-in-out;
             margin-bottom: 8px; /* Space between bus items */
-            cursor: pointer; /* Indicate clickability */
+        }
+        .bus-item.clickable { /* For items with click action (arrival time) */
+            cursor: pointer;
         }
         .bus-item:last-child {
             margin-bottom: 0; /* No margin for the last item in a group */
@@ -129,7 +139,7 @@
             width: 60%; /* Adjust width for better alignment */
             text-align: right;
         }
-        .arrival-time-display {
+        .arrival-time-display, .destination-display {
             font-size: 0.95rem;
             color: #4a5568;
             font-weight: 500;
@@ -137,11 +147,13 @@
             padding-top: 5px;
             border-top: 1px dashed #cbd5e0;
             width: 100%;
-            text-align: right; /* Align arrival time to right */
+            text-align: left; /* 行き先表示も右寄せに */
+            box-sizing: border-box;
+        }
+        .arrival-time-display {
             height: 0; /* Initially hidden with height 0 */
             overflow: hidden;
             transition: all 0.3s ease-out; /* Smooth transition for height */
-            box-sizing: border-box; /* Include padding and border in height calculation */
         }
         .arrival-time-display.visible {
             height: auto; /* Show content */
@@ -180,11 +192,14 @@
             .instruction-text {
                 font-size: 0.85rem;
             }
-            .schedule-selector {
+            .selector-group {
+                gap: 10px;
+            }
+            .schedule-selector, .bus-stop-selector {
                 flex-direction: column;
                 gap: 10px;
             }
-            .schedule-selector label {
+            .schedule-selector label, .bus-stop-selector label {
                 font-size: 1rem;
             }
             .hour-title {
@@ -201,7 +216,7 @@
             .bus-item-time {
                 font-size: 1.2rem; /* 20px */
             }
-            .arrival-time-display {
+            .arrival-time-display, .destination-display {
                 font-size: 0.9rem;
             }
         }
@@ -210,15 +225,25 @@
 <body>
     <div class="container">
         <h1>バス時刻表</h1>
-        <div class="instruction-text">各バス項目をタップ（クリック）すると、終点・西神中央駅前への到着時刻が表示されます。</div>
+        <div class="instruction-text">春日台6丁目発のバス項目をタップ（クリック）すると、終点・西神中央駅前への到着時刻が表示されます。</div>
 
-        <div class="schedule-selector">
-            <label>
-                <input type="radio" name="scheduleType" value="weekday" id="weekdayRadio"> 平日
-            </label>
-            <label>
-                <input type="radio" name="scheduleType" value="holiday" id="holidayRadio"> 土日祝
-            </label>
+        <div class="selector-group">
+            <div class="schedule-selector">
+                <label>
+                    <input type="radio" name="scheduleType" value="weekday" id="weekdayRadio"> 平日
+                </label>
+                <label>
+                    <input type="radio" name="scheduleType" value="holiday" id="holidayRadio"> 土日祝
+                </label>
+            </div>
+            <div class="bus-stop-selector">
+                <label>
+                    <input type="radio" name="busStop" value="kasugadai6chome" id="kasugadai6chomeRadio"> 春日台6丁目発
+                </label>
+                <label>
+                    <input type="radio" name="busStop" value="seishinchuoekimae" id="seishinChuoEkiMaeRadio"> 西神中央駅前発
+                </label>
+            </div>
         </div>
 
         <div id="bus-schedule" class="bus-list">
@@ -227,8 +252,8 @@
     </div>
 
     <script>
-        // バス時刻データ (系統番号と時刻)
-        const weekdayBusData = [
+        // バス時刻データ (系統番号と時刻) - 春日台6丁目発
+        const weekdayKasugadaiBusData = [
             { route: '21', time: '5:54' }, { route: '22', time: '6:06' }, { route: '21', time: '6:23' },
             { route: '28', time: '6:34' }, { route: '28', time: '6:44' }, { route: '28', time: '6:54' },
             { route: '22', time: '7:02' }, { route: '21', time: '7:09' }, { route: '28', time: '7:17' },
@@ -256,7 +281,7 @@
             { route: '28', time: '20:13' }, { route: '21', time: '21:18' }, { route: '28', time: '21:54' }
         ];
 
-        const holidayBusData = [
+        const holidayKasugadaiBusData = [
             { route: '21', time: '5:56' }, { route: '21', time: '6:15' }, { route: '28', time: '6:30' },
             { route: '28', time: '6:45' }, { route: '22', time: '7:08' }, { route: '21', time: '7:23' },
             { route: '22', time: '7:38' }, { route: '21', time: '7:48' }, { route: '22', time: '7:53' },
@@ -275,7 +300,170 @@
             { route: '22', time: '22:21' }
         ];
 
+        // バス時刻データ (系統番号、時刻、行き先コード) - 西神中央駅前発
+        const weekdaySeishinChuoBusData = [
+            { route: '22', time: '6:12', destinationCode: 'a' },
+            { route: '28', time: '6:32', destinationCode: 'b' },
+            { route: '28', time: '6:42', destinationCode: 'b' },
+            { route: '22', time: '6:44', destinationCode: 'a' },
+            { route: '22', time: '7:04', destinationCode: 'a' },
+            { route: '28', time: '7:11', destinationCode: 'a' },
+            { route: '21', time: '7:23', destinationCode: 'a' },
+            { route: '22', time: '7:27', destinationCode: 'a' },
+            { route: '28', time: '7:38', destinationCode: 'a' },
+            { route: '22', time: '7:43', destinationCode: 'a' },
+            { route: '28', time: '7:50', destinationCode: 'a' },
+            { route: '22', time: '7:55', destinationCode: 'a' },
+            { route: '28', time: '8:05', destinationCode: 'a' },
+            { route: '22', time: '8:07', destinationCode: 'a' },
+            { route: '21', time: '8:20', destinationCode: 'a' },
+            { route: '28', time: '8:33', destinationCode: 'a' },
+            { route: '22', time: '8:35', destinationCode: 'a' },
+            { route: '28', time: '8:45', destinationCode: 'a' },
+            { route: '22', time: '8:46', destinationCode: 'a' },
+            { route: '28', time: '9:00', destinationCode: 'a' },
+            { route: '22', time: '9:10', destinationCode: 'b' },
+            { route: '28', time: '9:20', destinationCode: 'b' },
+            { route: '22', time: '9:30', destinationCode: 'a' },
+            { route: '28', time: '9:40', destinationCode: 'b' },
+            { route: '21', time: '9:45', destinationCode: 'a' },
+            { route: '22', time: '9:50', destinationCode: 'b' },
+            { route: '28', time: '10:00', destinationCode: 'a' },
+            { route: '22', time: '10:10', destinationCode: 'b' },
+            { route: '28', time: '10:20', destinationCode: 'b' },
+            { route: '22', time: '10:30', destinationCode: 'a' },
+            { route: '28', time: '10:40', destinationCode: 'b' },
+            { route: '21', time: '10:45', destinationCode: 'a' },
+            { route: '22', time: '10:50', destinationCode: 'b' },
+            { route: '28', time: '11:00', destinationCode: 'a' },
+            { route: '22', time: '11:10', destinationCode: 'b' },
+            { route: '28', time: '11:20', destinationCode: 'b' },
+            { route: '22', time: '11:30', destinationCode: 'a' },
+            { route: '28', time: '11:40', destinationCode: 'b' },
+            { route: '21', time: '11:45', destinationCode: 'a' },
+            { route: '22', time: '11:50', destinationCode: 'b' },
+            { route: '28', time: '12:00', destinationCode: 'a' },
+            { route: '22', time: '12:10', destinationCode: 'b' },
+            { route: '28', time: '12:20', destinationCode: 'b' },
+            { route: '22', time: '12:30', destinationCode: 'a' },
+            { route: '28', time: '12:40', destinationCode: 'b' },
+            { route: '21', time: '12:45', destinationCode: 'a' },
+            { route: '22', time: '12:50', destinationCode: 'b' },
+            { route: '28', time: '13:00', destinationCode: 'a' },
+            { route: '22', time: '13:10', destinationCode: 'b' },
+            { route: '21', time: '13:20', destinationCode: 'a' },
+            { route: '28', time: '13:20', destinationCode: 'b' },
+            { route: '22', time: '13:30', destinationCode: 'a' },
+            { route: '28', time: '13:40', destinationCode: 'b' },
+            { route: '21', time: '13:45', destinationCode: 'a' },
+            { route: '22', time: '13:50', destinationCode: 'b' },
+            { route: '28', time: '14:00', destinationCode: 'a' },
+            { route: '22', time: '14:10', destinationCode: 'b' },
+            { route: '21', time: '14:20', destinationCode: 'a' },
+            { route: '28', time: '14:20', destinationCode: 'b' },
+            { route: '22', time: '14:30', destinationCode: 'a' },
+            { route: '28', time: '14:40', destinationCode: 'b' },
+            { route: '21', time: '14:45', destinationCode: 'a' },
+            { route: '22', time: '14:50', destinationCode: 'b' },
+            { route: '28', time: '15:00', destinationCode: 'a' },
+            { route: '22', time: '15:10', destinationCode: 'b' },
+            { route: '21', time: '15:20', destinationCode: 'a' },
+            { route: '28', time: '15:20', destinationCode: 'b' },
+            { route: '22', time: '15:30', destinationCode: 'a' },
+            { route: '28', time: '15:40', destinationCode: 'a' },
+            { route: '21', time: '15:45', destinationCode: 'a' },
+            { route: '22', time: '15:50', destinationCode: 'a' },
+            { route: '28', time: '16:00', destinationCode: 'b' },
+            { route: '22', time: '16:05', destinationCode: 'a' },
+            { route: '28', time: '16:15', destinationCode: 'a' },
+            { route: '22', time: '16:20', destinationCode: 'a' },
+            { route: '28', time: '16:30', destinationCode: 'a' },
+            { route: '22', time: '16:35', destinationCode: 'b' },
+            { route: '21', time: '16:40', destinationCode: 'a' },
+            { route: '28', time: '16:45', destinationCode: 'a' },
+            { route: '22', time: '16:50', destinationCode: 'c' },
+            { route: '21', time: '16:55', destinationCode: 'a' },
+            { route: '28', time: '17:00', destinationCode: 'a' },
+            { route: '22', time: '17:05', destinationCode: 'a' },
+            { route: '28', time: '17:15', destinationCode: 'a' },
+            { route: '22', time: '17:20', destinationCode: 'a' },
+            { route: '28', time: '17:30', destinationCode: 'b' },
+            { route: '22', time: '17:35', destinationCode: 'a' },
+            { route: '28', time: '17:45', destinationCode: 'b' },
+            { route: '21', time: '17:50', destinationCode: 'a' },
+            { route: '22', time: '17:52', destinationCode: 'a' },
+            { route: '28', time: '18:00', destinationCode: 'a' },
+            { route: '22', time: '18:02', destinationCode: 'b' },
+            { route: '28', time: '18:12', destinationCode: 'b' },
+            { route: '22', time: '18:14', destinationCode: 'a' },
+            { route: '28', time: '18:24', destinationCode: 'd' },
+            { route: '22', time: '18:24', destinationCode: 'b' },
+            { route: '22', time: '18:34', destinationCode: 'a' },
+            { route: '28', time: '18:36', destinationCode: 'd' },
+            { route: '21', time: '18:40', destinationCode: 'a' },
+            { route: '22', time: '18:44', destinationCode: 'a' },
+            { route: '28', time: '18:48', destinationCode: 'b' },
+            { route: '22', time: '18:54', destinationCode: 'a' },
+            { route: '28', time: '19:00', destinationCode: 'b' },
+            { route: '22', time: '19:05', destinationCode: 'a' },
+            { route: '28', time: '19:12', destinationCode: 'b' },
+            { route: '22', time: '19:20', destinationCode: 'a' },
+            { route: '28', time: '19:24', destinationCode: 'd' },
+            { route: '21', time: '19:28', destinationCode: 'a' },
+            { route: '22', time: '19:38', destinationCode: 'c' },
+            { route: '28', time: '19:38', destinationCode: 'a' },
+            { route: '22', time: '19:51', destinationCode: 'c' },
+            { route: '28', time: '19:51', destinationCode: 'a' },
+            { route: '22', time: '20:03', destinationCode: 'c' },
+            { route: '28', time: '20:07', destinationCode: 'b' },
+            { route: '21', time: '20:20', destinationCode: 'a' },
+            { route: '28', time: '20:20', destinationCode: 'd' },
+            { route: '22', time: '20:22', destinationCode: 'b' },
+            { route: '28', time: '20:33', destinationCode: 'b' },
+            { route: '22', time: '20:38', destinationCode: 'a' },
+            { route: '28', time: '20:47', destinationCode: 'b' },
+            { route: '22', time: '20:55', destinationCode: 'a' },
+            { route: '28', time: '21:03', destinationCode: 'd' },
+            { route: '22', time: '21:13', destinationCode: 'b' },
+            { route: '28', time: '21:25', destinationCode: 'b' },
+            { route: '21', time: '21:33', destinationCode: 'a' },
+            { route: '22', time: '21:35', destinationCode: 'c' },
+            { route: '28', time: '21:46', destinationCode: 'b' },
+            { route: '22', time: '21:59', destinationCode: 'a' },
+            { route: '28', time: '22:05', destinationCode: 'b' },
+            { route: '22', time: '22:16', destinationCode: 'a' },
+            { route: '28', time: '22:23', destinationCode: 'a' },
+            { route: '22', time: '22:36', destinationCode: 'b' },
+            { route: '28', time: '22:45', destinationCode: 'b' },
+            { route: '22', time: '22:50', destinationCode: 'a' },
+            { route: '28', time: '22:58', destinationCode: 'a' },
+            { route: '22', time: '23:05', destinationCode: 'c' },
+            { route: '22', time: '23:21', destinationCode: 'c' },
+            { route: '28', time: '23:21', destinationCode: 'd' }
+        ];
+
+        // バス時刻データ (系統番号、時刻、行き先コード) - 西神中央駅前発 土日祝 (今回はデータなし)
+        const holidaySeishinChuoBusData = [
+            // 土日祝の西神中央駅前発のデータが提供されたらここに追加
+        ];
+
         let currentActiveSchedule = null; // 現在選択されている時刻表タイプ (weekday/holiday)
+        let currentBusStopType = null; // 現在選択されているバス停タイプ (kasugadai6chome/seishinchuoekimae)
+
+        /**
+         * 行き先コードをテキストに変換する関数
+         * @param {string} code - 行き先コード (a, b, c, d)
+         * @returns {string} - 行き先の日本語テキスト
+         */
+        function getDestinationText(code) {
+            switch (code) {
+                case 'a': return '西体育館';
+                case 'b': return '西神中央駅前';
+                case 'c': return 'かすがプラザ止';
+                case 'd': return '春日台4丁目止';
+                default: return '';
+            }
+        }
 
         /**
          * 到着時刻を計算する関数
@@ -317,148 +505,197 @@
         }
 
         /**
-         * 与えられた時刻データをもとに時刻表を生成・更新する関数
-         * @param {Array<Object>} currentBusData - 表示するバスデータ（平日または土日祝）
+         * 現在選択されている時刻表データ（平日/土日祝、バス停別）を取得するヘルパー関数
+         * @returns {Array<Object>} 選択されているバスデータ
          */
-
-    function generateTimetable(currentBusData) {
-        const now = new Date();
-        const currentHour = now.getHours();
-        const currentMinute = now.getMinutes();
-
-        const scheduleContainer = document.getElementById('bus-schedule');
-        scheduleContainer.innerHTML = ''; // 既存の内容をクリア
-
-        const groupedBusData = {};
-        currentBusData.forEach(bus => {
-            const hour = parseInt(bus.time.split(':')[0]);
-            if (!groupedBusData[hour]) {
-                groupedBusData[hour] = [];
+        function getSelectedBusData() {
+            if (currentBusStopType === 'kasugadai6chome') {
+                return currentActiveSchedule === 'weekday' ? weekdayKasugadaiBusData : holidayKasugadaiBusData;
+            } else { // currentBusStopType === 'seishinchuoekimae'
+                return currentActiveSchedule === 'weekday' ? weekdaySeishinChuoBusData : holidaySeishinChuoBusData;
             }
-            groupedBusData[hour].push(bus);
-        });
+        }
 
-        let firstUpcomingBusElement = null;
+        /**
+         * 与えられた時刻データをもとに時刻表を生成・更新する関数
+         * @param {Array<Object>} currentBusData - 表示するバスデータ
+         * @param {string} busStopType - 現在表示しているバス停のタイプ ('kasugadai6chome' または 'seishinchuoekimae')
+         */
+        function generateTimetable(currentBusData, busStopType) {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
 
-        const sortedHours = Object.keys(groupedBusData).sort((a, b) => Number(a) - Number(b));
+            const scheduleContainer = document.getElementById('bus-schedule');
+            scheduleContainer.innerHTML = ''; // 既存の内容をクリア
 
-        sortedHours.forEach(hour => {
-            const hourGroupDiv = document.createElement('div');
-            hourGroupDiv.classList.add('hour-group');
-            hourGroupDiv.id = `hour-group-${hour}`;
-
-            const hourTitle = document.createElement('h2');
-            hourTitle.classList.add('hour-title');
-            hourTitle.textContent = `${hour}時台`;
-            hourGroupDiv.appendChild(hourTitle);
-
-            groupedBusData[hour].forEach(bus => {
-                const [busHour, busMinute] = bus.time.split(':').map(Number);
-                const busTimeInMinutes = busHour * 60 + busMinute;
-                const currentTimeInMinutes = currentHour * 60 + currentMinute;
-
-                const busItem = document.createElement('div');
-                busItem.classList.add('bus-item');
-
-                if (busTimeInMinutes > currentTimeInMinutes && firstUpcomingBusElement === null) {
-                    busItem.classList.add('upcoming');
-                    firstUpcomingBusElement = busItem;
-                } else if (busTimeInMinutes <= currentTimeInMinutes) {
-                    busItem.classList.add('past');
+            const groupedBusData = {};
+            currentBusData.forEach(bus => {
+                const hour = parseInt(bus.time.split(':')[0]);
+                if (!groupedBusData[hour]) {
+                    groupedBusData[hour] = [];
                 }
-
-                const busInfoDiv = document.createElement('div');
-                busInfoDiv.classList.add('bus-info');
-
-                const routeSpan = document.createElement('span');
-                routeSpan.classList.add('bus-item-route');
-                routeSpan.textContent = `${bus.route}系統`;
-
-                const timeSpan = document.createElement('span');
-                timeSpan.classList.add('bus-item-time');
-                timeSpan.textContent = bus.time;
-
-                busInfoDiv.appendChild(routeSpan);
-                busInfoDiv.appendChild(timeSpan);
-                busItem.appendChild(busInfoDiv);
-
-                const arrivalTimeDisplay = document.createElement('div');
-                arrivalTimeDisplay.classList.add('arrival-time-display', 'hidden');
-                busItem.appendChild(arrivalTimeDisplay);
-
-                busItem.addEventListener('click', () => {
-                    const arrivalTime = calculateArrivalTime(bus.time, bus.route, currentActiveSchedule);
-                    arrivalTimeDisplay.textContent = `終点・西神中央駅前 到着時刻: ${arrivalTime}`;
-                    arrivalTimeDisplay.classList.toggle('visible');
-                    arrivalTimeDisplay.classList.toggle('hidden');
-                });
-
-                hourGroupDiv.appendChild(busItem); // ← 修正ここ！
+                groupedBusData[hour].push(bus);
             });
 
-            scheduleContainer.appendChild(hourGroupDiv); // ← グループをまとめて追加
-        });
+            let firstUpcomingBusElement = null;
 
-        if (firstUpcomingBusElement) {
-            setTimeout(() => {
-                firstUpcomingBusElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
-        } else if (currentBusData.length > 0) {
-            const noUpcoming = document.createElement('div');
-            noUpcoming.classList.add('bus-item', 'text-gray-600', 'justify-center');
-            noUpcoming.textContent = '本日の運行は終了しました。';
-            scheduleContainer.appendChild(noUpcoming);
-        } else {
-            const noData = document.createElement('div');
-            noData.classList.add('bus-item', 'text-gray-600', 'justify-center');
-            noData.textContent = '表示するバスデータがありません。';
-            scheduleContainer.appendChild(noData);
+            const sortedHours = Object.keys(groupedBusData).sort((a, b) => Number(a) - Number(b));
+
+            sortedHours.forEach(hour => {
+                const hourGroupDiv = document.createElement('div');
+                hourGroupDiv.classList.add('hour-group');
+                hourGroupDiv.id = `hour-group-${hour}`;
+
+                const hourTitle = document.createElement('h2');
+                hourTitle.classList.add('hour-title');
+                hourTitle.textContent = `${hour}時台`;
+                hourGroupDiv.appendChild(hourTitle);
+
+                groupedBusData[hour].forEach(bus => {
+                    const [busHour, busMinute] = bus.time.split(':').map(Number);
+                    const busTimeInMinutes = busHour * 60 + busMinute;
+                    const currentTimeInMinutes = currentHour * 60 + currentMinute;
+
+                    const busItem = document.createElement('div');
+                    busItem.classList.add('bus-item');
+
+                    if (busTimeInMinutes > currentTimeInMinutes && firstUpcomingBusElement === null) {
+                        busItem.classList.add('upcoming');
+                        firstUpcomingBusElement = busItem;
+                    } else if (busTimeInMinutes <= currentTimeInMinutes) {
+                        busItem.classList.add('past');
+                    }
+
+                    const busInfoDiv = document.createElement('div');
+                    busInfoDiv.classList.add('bus-info');
+
+                    const routeSpan = document.createElement('span');
+                    routeSpan.classList.add('bus-item-route');
+                    routeSpan.textContent = `${bus.route}系統`;
+
+                    const timeSpan = document.createElement('span');
+                    timeSpan.classList.add('bus-item-time');
+                    timeSpan.textContent = bus.time;
+
+                    busInfoDiv.appendChild(routeSpan);
+                    busInfoDiv.appendChild(timeSpan);
+                    busItem.appendChild(busInfoDiv);
+
+                    // バス停の種類によって表示内容とクリックイベントを分岐
+                    if (busStopType === 'kasugadai6chome') {
+                        busItem.classList.add('clickable'); // クリック可能であることを示すスタイル
+
+                        // 春日台6丁目発のバスには常に「西神中央駅前行」の行き先を追加
+                        const destinationDisplay = document.createElement('div');
+                        destinationDisplay.classList.add('destination-display');
+                        destinationDisplay.textContent = '西神中央駅前行'; // 「行き先:」を削除
+                        busItem.appendChild(destinationDisplay);
+
+                        const arrivalTimeDisplay = document.createElement('div');
+                        arrivalTimeDisplay.classList.add('arrival-time-display', 'hidden');
+                        busItem.appendChild(arrivalTimeDisplay);
+
+                        busItem.addEventListener('click', () => {
+                            const arrivalTime = calculateArrivalTime(bus.time, bus.route, currentActiveSchedule);
+                            arrivalTimeDisplay.textContent = `終点・西神中央駅前 到着時刻: ${arrivalTime}`;
+                            arrivalTimeDisplay.classList.toggle('visible');
+                            arrivalTimeDisplay.classList.toggle('hidden');
+                        });
+                    } else if (busStopType === 'seishinchuoekimae') {
+                        const destinationDisplay = document.createElement('div');
+                        destinationDisplay.classList.add('destination-display');
+                        destinationDisplay.textContent = getDestinationText(bus.destinationCode); // 「行き先:」を削除
+                        busItem.appendChild(destinationDisplay);
+                        // 西神中央駅前発のバス項目はクリックアクションがないため、カーソルはデフォルト
+                        busItem.style.cursor = 'default';
+                    }
+
+                    hourGroupDiv.appendChild(busItem);
+                });
+
+                scheduleContainer.appendChild(hourGroupDiv);
+            });
+
+            // 最初の次のバスが見つかった場合、そこまでスクロール
+            if (firstUpcomingBusElement) {
+                setTimeout(() => {
+                    firstUpcomingBusElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            } else if (currentBusData.length > 0) {
+                // 次のバスがない場合（例：終バス後）
+                const noUpcoming = document.createElement('div');
+                noUpcoming.classList.add('bus-item', 'text-gray-600', 'justify-center');
+                noUpcoming.textContent = '本日の運行は終了しました。';
+                scheduleContainer.appendChild(noUpcoming);
+            } else {
+                 // バスデータが全くない場合
+                const noData = document.createElement('div');
+                noData.classList.add('bus-item', 'text-gray-600', 'justify-center');
+                noData.textContent = '表示するバスデータがありません。';
+                scheduleContainer.appendChild(noData);
+            }
         }
-    }
 
         // 初期ロード時の処理
         window.onload = function() {
             // ラジオボタン要素を取得
             const weekdayRadio = document.getElementById('weekdayRadio');
             const holidayRadio = document.getElementById('holidayRadio');
+            const kasugadai6chomeRadio = document.getElementById('kasugadai6chomeRadio');
+            const seishinChuoEkiMaeRadio = document.getElementById('seishinChuoEkiMaeRadio');
 
-            // 現在の曜日を判定し、デフォルトで表示する時刻表を選択
+            // 現在の曜日を判定し、デフォルトで表示する時刻表の種類を選択
             const today = new Date();
             const dayOfWeek = today.getDay(); // 0:日, 1:月, ..., 6:土
 
-            // 土曜日(6)または日曜日(0)の場合、土日祝をデフォルトに設定
-            if (dayOfWeek === 0 || dayOfWeek === 6) {
+            if (dayOfWeek === 0 || dayOfWeek === 6) { // 日曜日または土曜日
                 holidayRadio.checked = true;
                 currentActiveSchedule = 'holiday';
-                generateTimetable(holidayBusData);
-            } else {
+            } else { // 平日
                 weekdayRadio.checked = true;
                 currentActiveSchedule = 'weekday';
-                generateTimetable(weekdayBusData);
             }
+
+            // バス停のデフォルト選択（春日台6丁目をデフォルトとする）
+            kasugadai6chomeRadio.checked = true;
+            currentBusStopType = 'kasugadai6chome';
+
+            // 初期時刻表の生成
+            generateTimetable(getSelectedBusData(), currentBusStopType);
 
             // ラジオボタンの変更イベントリスナーを設定
             weekdayRadio.addEventListener('change', () => {
                 if (weekdayRadio.checked) {
                     currentActiveSchedule = 'weekday';
-                    generateTimetable(weekdayBusData);
+                    generateTimetable(getSelectedBusData(), currentBusStopType);
                 }
             });
 
             holidayRadio.addEventListener('change', () => {
                 if (holidayRadio.checked) {
                     currentActiveSchedule = 'holiday';
-                    generateTimetable(holidayBusData);
+                    generateTimetable(getSelectedBusData(), currentBusStopType);
+                }
+            });
+
+            kasugadai6chomeRadio.addEventListener('change', () => {
+                if (kasugadai6chomeRadio.checked) {
+                    currentBusStopType = 'kasugadai6chome';
+                    generateTimetable(getSelectedBusData(), currentBusStopType);
+                }
+            });
+
+            seishinChuoEkiMaeRadio.addEventListener('change', () => {
+                if (seishinChuoEkiMaeRadio.checked) {
+                    currentBusStopType = 'seishinchuoekimae';
+                    generateTimetable(getSelectedBusData(), currentBusStopType);
                 }
             });
 
             // 1分ごとに時刻表を更新
             setInterval(() => {
-                if (currentActiveSchedule === 'weekday') {
-                    generateTimetable(weekdayBusData);
-                } else {
-                    generateTimetable(holidayBusData);
-                }
+                generateTimetable(getSelectedBusData(), currentBusStopType);
             }, 60 * 1000);
         };
     </script>
