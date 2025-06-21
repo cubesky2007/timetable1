@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>春日台６丁目　神戸市バス・神姫バス時刻表</title>
+    <title>バス時刻表</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -11,13 +11,13 @@
             background-color: #f0f4f8;
             color: #333;
             display: flex;
-            justify-content: center; /* 中央寄せに戻す */
+            justify-content: center;
             align-items: center;
             min-height: 100vh;
             padding: 20px;
             box-sizing: border-box;
         }
-        .container { /* main-content-wrapperからcontainerに戻す */
+        .container {
             background-color: #ffffff;
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
@@ -32,6 +32,12 @@
             font-size: 2.25rem; /* 36px */
             font-weight: 700;
             margin-bottom: 20px;
+        }
+        .instruction-text {
+            font-size: 0.9rem;
+            color: #667eea; /* Indigo */
+            margin-bottom: 20px;
+            font-weight: 500;
         }
         .schedule-selector {
             margin-bottom: 25px;
@@ -52,8 +58,6 @@
             transform: scale(1.3); /* 大きめのラジオボタン */
             accent-color: #3182ce; /* ハイライトカラー */
         }
-        /* time-jump-buttons 関連のスタイルを削除 */
-
         .bus-list {
             display: flex;
             flex-direction: column;
@@ -81,14 +85,15 @@
         }
         .bus-item {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column; /* Allow vertical stacking for arrival time */
+            align-items: flex-start; /* Align content to start */
             padding: 12px 15px;
             background-color: #f7fafc;
             border-radius: 10px;
             border: 1px solid #e2e8f0;
             transition: all 0.2s ease-in-out;
             margin-bottom: 8px; /* Space between bus items */
+            cursor: pointer; /* Indicate clickability */
         }
         .bus-item:last-child {
             margin-bottom: 0; /* No margin for the last item in a group */
@@ -104,6 +109,12 @@
             opacity: 0.6;
             background-color: #edf2f7;
         }
+        .bus-info { /* Wrapper for route and time */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
         .bus-item-route {
             font-size: 1.125rem; /* 18px */
             font-weight: 700;
@@ -118,6 +129,30 @@
             width: 60%; /* Adjust width for better alignment */
             text-align: right;
         }
+        .arrival-time-display {
+            font-size: 0.95rem;
+            color: #4a5568;
+            font-weight: 500;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px dashed #cbd5e0;
+            width: 100%;
+            text-align: right; /* Align arrival time to right */
+            height: 0; /* Initially hidden with height 0 */
+            overflow: hidden;
+            transition: all 0.3s ease-out; /* Smooth transition for height */
+            box-sizing: border-box; /* Include padding and border in height calculation */
+        }
+        .arrival-time-display.visible {
+            height: auto; /* Show content */
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+        .arrival-time-display.hidden {
+            padding-top: 0;
+            margin-top: 0;
+        }
+
         /* Scrollbar styles for better aesthetics */
         .bus-list::-webkit-scrollbar {
             width: 8px;
@@ -135,12 +170,15 @@
         }
 
         /* Responsive adjustments */
-        @media (max-width: 640px) { /* 768pxから640pxにMedia Queryのブレークポイントを戻す */
+        @media (max-width: 640px) {
             .container {
                 padding: 20px;
             }
             h1 {
                 font-size: 1.75rem; /* 28px */
+            }
+            .instruction-text {
+                font-size: 0.85rem;
             }
             .schedule-selector {
                 flex-direction: column;
@@ -149,29 +187,30 @@
             .schedule-selector label {
                 font-size: 1rem;
             }
-            /* time-jump-buttons 関連のレスポンシブスタイルを削除 */
             .hour-title {
                 font-size: 1.25rem; /* 20px */
             }
             .bus-item {
-                flex-direction: column;
-                align-items: flex-start;
                 padding: 10px 12px;
             }
             .bus-item-route, .bus-item-time {
                 width: 100%;
                 text-align: left;
-                margin-bottom: 4px;
+                margin-bottom: 4px; /* Adjust margin for stacked elements */
             }
             .bus-item-time {
                 font-size: 1.2rem; /* 20px */
+            }
+            .arrival-time-display {
+                font-size: 0.9rem;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>春日台６丁目　神戸市営•神姫</h1>
+        <h1>バス時刻表</h1>
+        <div class="instruction-text">各バス項目をタップ（クリック）すると、終点・西神中央駅前への到着時刻が表示されます。</div>
 
         <div class="schedule-selector">
             <label>
@@ -238,96 +277,144 @@
 
         let currentActiveSchedule = null; // 現在選択されている時刻表タイプ (weekday/holiday)
 
-        // createTimeJumpButtons 関数を削除
+        /**
+         * 到着時刻を計算する関数
+         * @param {string} departureTimeStr - 発車時刻 (例: "7:09")
+         * @param {string} route - 系統番号 (例: "21")
+         * @param {string} scheduleType - スケジュールタイプ ("weekday" または "holiday")
+         * @returns {string} - 到着時刻 (HH:MM形式)
+         */
+        function calculateArrivalTime(departureTimeStr, route, scheduleType) {
+            const [depHour, depMinute] = departureTimeStr.split(':').map(Number);
+            let travelMinutes;
+
+            if (scheduleType === 'weekday') {
+                // 平日: 午前9時を境に所要時間が変わる
+                if (depHour < 9) { // 午前9時（9:00）より前の発車
+                    if (route === '21') travelMinutes = 13;
+                    else if (route === '22') travelMinutes = 17;
+                    else if (route === '28') travelMinutes = 16;
+                } else { // 午前9時（9:00）以降の発車
+                    if (route === '21') travelMinutes = 13;
+                    else if (route === '22') travelMinutes = 14;
+                    else if (route === '28') travelMinutes = 13;
+                }
+            } else { // 土日祝
+                if (route === '21') travelMinutes = 12;
+                else if (route === '22') travelMinutes = 14;
+                else if (route === '28') travelMinutes = 13;
+            }
+
+            let arrivalTotalMinutes = (depHour * 60 + depMinute) + travelMinutes;
+
+            let arrHour = Math.floor(arrivalTotalMinutes / 60);
+            let arrMinute = arrivalTotalMinutes % 60;
+
+            // 日付をまたぐ場合の時間を調整 (今回はバスの運行時間帯から24時を超えることは想定しないが、念のため)
+            if (arrHour >= 24) arrHour -= 24;
+
+            return `${arrHour.toString().padStart(2, '0')}:${arrMinute.toString().padStart(2, '0')}`;
+        }
 
         /**
          * 与えられた時刻データをもとに時刻表を生成・更新する関数
          * @param {Array<Object>} currentBusData - 表示するバスデータ（平日または土日祝）
          */
-        function generateTimetable(currentBusData) {
-            const now = new Date();
-            const currentHour = now.getHours();
-            const currentMinute = now.getMinutes();
 
-            const scheduleContainer = document.getElementById('bus-schedule');
-            scheduleContainer.innerHTML = ''; // 既存の内容をクリア
+    function generateTimetable(currentBusData) {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
 
-            // バスデータを時間帯でグループ化
-            const groupedBusData = {};
-            currentBusData.forEach(bus => {
-                const hour = parseInt(bus.time.split(':')[0]);
-                if (!groupedBusData[hour]) {
-                    groupedBusData[hour] = [];
-                }
-                groupedBusData[hour].push(bus);
-            });
+        const scheduleContainer = document.getElementById('bus-schedule');
+        scheduleContainer.innerHTML = ''; // 既存の内容をクリア
 
-            let firstUpcomingBusElement = null;
-
-            // グループ化されたデータをもとに時刻表を生成
-            const sortedHours = Object.keys(groupedBusData).sort((a, b) => Number(a) - Number(b));
-
-            sortedHours.forEach(hour => {
-                const hourGroupDiv = document.createElement('div');
-                hourGroupDiv.classList.add('hour-group');
-                hourGroupDiv.id = `hour-group-${hour}`; // スクロールターゲット用のIDは維持（将来的な拡張のため）
-
-                const hourTitle = document.createElement('h2');
-                hourTitle.classList.add('hour-title');
-                hourTitle.textContent = `${hour}時`;
-                hourGroupDiv.appendChild(hourTitle);
-
-                groupedBusData[hour].forEach(bus => {
-                    const [busHour, busMinute] = bus.time.split(':').map(Number);
-                    const busTimeInMinutes = busHour * 60 + busMinute;
-                    const currentTimeInMinutes = currentHour * 60 + currentMinute;
-
-                    const busItem = document.createElement('div');
-                    busItem.classList.add('bus-item');
-
-                    // 現在時刻より後のバス、かつ最初のものにupcomingクラスを付与
-                    if (busTimeInMinutes > currentTimeInMinutes && firstUpcomingBusElement === null) {
-                        busItem.classList.add('upcoming');
-                        firstUpcomingBusElement = busItem;
-                    } else if (busTimeInMinutes <= currentTimeInMinutes) {
-                        // 現在時刻より前のバス
-                        busItem.classList.add('past');
-                    }
-
-                    const routeSpan = document.createElement('span');
-                    routeSpan.classList.add('bus-item-route');
-                    routeSpan.textContent = `${bus.route}系統`;
-
-                    const timeSpan = document.createElement('span');
-                    timeSpan.classList.add('bus-item-time');
-                    timeSpan.textContent = bus.time;
-
-                    busItem.appendChild(routeSpan);
-                    busItem.appendChild(timeSpan);
-                    hourGroupDiv.appendChild(busItem);
-                });
-                scheduleContainer.appendChild(hourGroupDiv);
-            });
-
-            // 最初の次のバスが見つかった場合、そこまでスクロール
-            if (firstUpcomingBusElement) {
-                setTimeout(() => {
-                    firstUpcomingBusElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 100);
-            } else if (currentBusData.length > 0) {
-                // 次のバスがない場合（例：終バス後）
-                const noUpcoming = document.createElement('div');
-                noUpcoming.classList.add('bus-item', 'text-gray-600', 'justify-center');
-                noUpcoming.textContent = '本日の運行は終了しました。';
-                scheduleContainer.appendChild(noUpcoming);
-            } else {
-                 // バスデータが全くない場合
-                const noData = document.createElement('div');
-                noData.classList.add('bus-item', 'text-gray-600', 'justify-center');
-                noData.textContent = '表示するバスデータがありません。';
-                scheduleContainer.appendChild(noData);
+        const groupedBusData = {};
+        currentBusData.forEach(bus => {
+            const hour = parseInt(bus.time.split(':')[0]);
+            if (!groupedBusData[hour]) {
+                groupedBusData[hour] = [];
             }
+            groupedBusData[hour].push(bus);
+        });
+
+        let firstUpcomingBusElement = null;
+
+        const sortedHours = Object.keys(groupedBusData).sort((a, b) => Number(a) - Number(b));
+
+        sortedHours.forEach(hour => {
+            const hourGroupDiv = document.createElement('div');
+            hourGroupDiv.classList.add('hour-group');
+            hourGroupDiv.id = `hour-group-${hour}`;
+
+            const hourTitle = document.createElement('h2');
+            hourTitle.classList.add('hour-title');
+            hourTitle.textContent = `${hour}時台`;
+            hourGroupDiv.appendChild(hourTitle);
+
+            groupedBusData[hour].forEach(bus => {
+                const [busHour, busMinute] = bus.time.split(':').map(Number);
+                const busTimeInMinutes = busHour * 60 + busMinute;
+                const currentTimeInMinutes = currentHour * 60 + currentMinute;
+
+                const busItem = document.createElement('div');
+                busItem.classList.add('bus-item');
+
+                if (busTimeInMinutes > currentTimeInMinutes && firstUpcomingBusElement === null) {
+                    busItem.classList.add('upcoming');
+                    firstUpcomingBusElement = busItem;
+                } else if (busTimeInMinutes <= currentTimeInMinutes) {
+                    busItem.classList.add('past');
+                }
+
+                const busInfoDiv = document.createElement('div');
+                busInfoDiv.classList.add('bus-info');
+
+                const routeSpan = document.createElement('span');
+                routeSpan.classList.add('bus-item-route');
+                routeSpan.textContent = `${bus.route}系統`;
+
+                const timeSpan = document.createElement('span');
+                timeSpan.classList.add('bus-item-time');
+                timeSpan.textContent = bus.time;
+
+                busInfoDiv.appendChild(routeSpan);
+                busInfoDiv.appendChild(timeSpan);
+                busItem.appendChild(busInfoDiv);
+
+                const arrivalTimeDisplay = document.createElement('div');
+                arrivalTimeDisplay.classList.add('arrival-time-display', 'hidden');
+                busItem.appendChild(arrivalTimeDisplay);
+
+                busItem.addEventListener('click', () => {
+                    const arrivalTime = calculateArrivalTime(bus.time, bus.route, currentActiveSchedule);
+                    arrivalTimeDisplay.textContent = `終点・西神中央駅前 到着時刻: ${arrivalTime}`;
+                    arrivalTimeDisplay.classList.toggle('visible');
+                    arrivalTimeDisplay.classList.toggle('hidden');
+                });
+
+                hourGroupDiv.appendChild(busItem); // ← 修正ここ！
+            });
+
+            scheduleContainer.appendChild(hourGroupDiv); // ← グループをまとめて追加
+        });
+
+        if (firstUpcomingBusElement) {
+            setTimeout(() => {
+                firstUpcomingBusElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        } else if (currentBusData.length > 0) {
+            const noUpcoming = document.createElement('div');
+            noUpcoming.classList.add('bus-item', 'text-gray-600', 'justify-center');
+            noUpcoming.textContent = '本日の運行は終了しました。';
+            scheduleContainer.appendChild(noUpcoming);
+        } else {
+            const noData = document.createElement('div');
+            noData.classList.add('bus-item', 'text-gray-600', 'justify-center');
+            noData.textContent = '表示するバスデータがありません。';
+            scheduleContainer.appendChild(noData);
         }
+    }
 
         // 初期ロード時の処理
         window.onload = function() {
