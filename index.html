@@ -21,8 +21,8 @@
             background-color: #ffffff;
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            max-width: 100%; /* 画面全体に広がるように変更 */
-            width: 100%;    /* 画面全体に広がるように変更 */
+            max-width: 90%;
+            width: 700px;
             padding: 30px;
             text-align: center;
             border: 1px solid #e2e8f0;
@@ -49,10 +49,9 @@
         .schedule-selector, .bus-stop-selector {
             display: flex;
             justify-content: center;
-            gap: 10px; /* ボタン間のスペースを調整 */
+            gap: 20px;
             width: 100%;
-            max-width: 600px; /* ボタンが広がりすぎないように調整 */
-            flex-wrap: wrap; /* 小さい画面で折り返す */
+            max-width: 400px;
         }
         .schedule-selector label, .bus-stop-selector label {
             display: flex;
@@ -61,49 +60,12 @@
             font-weight: 600;
             color: #2d3748;
             cursor: pointer;
-            /* ラジオボタンを隠す */
-            position: relative;
-            user-select: none; /* テキスト選択を防ぐ */
         }
         .schedule-selector input[type="radio"], .bus-stop-selector input[type="radio"] {
-            /* 実際のラジオボタンを視覚的に隠す */
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
+            margin-right: 8px;
+            transform: scale(1.3); /* 大きめのラジオボタン */
+            accent-color: #3182ce; /* ハイライトカラー */
         }
-
-        /* カスタムボタンのスタイル */
-        .schedule-selector label span, .bus-stop-selector label span {
-            background-color: #e2e8f0; /* 通常時のボタン背景色 */
-            color: #2d3748; /* 通常時のボタン文字色 */
-            padding: 10px 20px;
-            border-radius: 8px;
-            transition: all 0.2s ease-in-out;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            border: 1px solid #cbd5e0;
-            text-align: center;
-            flex-grow: 1; /* ボタンが均等に広がるように */
-            min-width: 120px; /* 最小幅を設定 */
-        }
-
-        .schedule-selector label:hover span, .bus-stop-selector label:hover span {
-            background-color: #d1d9e0; /* ホバー時のボタン背景色 */
-        }
-
-        /* 選択時のボタンのスタイル */
-        .schedule-selector input[type="radio"]:checked + span,
-        .bus-stop-selector input[type="radio"]:checked + span {
-            background-color: #3182ce; /* 選択時のボタン背景色 */
-            color: white; /* 選択時のボタン文字色 */
-            border-color: #3182ce;
-            box-shadow: 0 4px 10px rgba(49, 130, 206, 0.2);
-            transform: translateY(-2px);
-        }
-
         .bus-list {
             display: flex;
             flex-direction: column;
@@ -185,7 +147,7 @@
             padding-top: 5px;
             border-top: 1px dashed #cbd5e0;
             width: 100%;
-            text-align: right; /* 行き先表示も右寄せに */
+            text-align: left; /* 行き先表示も右寄せに */
             box-sizing: border-box;
         }
         .arrival-time-display {
@@ -240,11 +202,6 @@
             .schedule-selector label, .bus-stop-selector label {
                 font-size: 1rem;
             }
-            /* ボタンが縦に並ぶように調整 */
-            .schedule-selector label span, .bus-stop-selector label span {
-                width: 100%;
-                min-width: unset;
-            }
             .hour-title {
                 font-size: 1.25rem; /* 20px */
             }
@@ -268,27 +225,23 @@
 <body>
     <div class="container">
         <h1>バス時刻表</h1>
-        <div class="instruction-text" id="instruction-text"></div>
+        <div class="instruction-text">春日台6丁目発のバス項目をタップ（クリック）すると、終点・西神中央駅前への到着時刻が表示されます。</div>
 
         <div class="selector-group">
             <div class="schedule-selector">
                 <label>
-                    <input type="radio" name="scheduleType" value="weekday" id="weekdayRadio">
-                    <span>平日</span>
+                    <input type="radio" name="scheduleType" value="weekday" id="weekdayRadio"> 平日
                 </label>
                 <label>
-                    <input type="radio" name="scheduleType" value="holiday" id="holidayRadio">
-                    <span>土日祝</span>
+                    <input type="radio" name="scheduleType" value="holiday" id="holidayRadio"> 土日祝
                 </label>
             </div>
             <div class="bus-stop-selector">
                 <label>
-                    <input type="radio" name="busStop" value="kasugadai6chome" id="kasugadai6chomeRadio">
-                    <span>春日台6丁目発</span>
+                    <input type="radio" name="busStop" value="kasugadai6chome" id="kasugadai6chomeRadio"> 春日台6丁目発
                 </label>
                 <label>
-                    <input type="radio" name="busStop" value="seishinchuoekimae" id="seishinChuoEkiMaeRadio">
-                    <span>西神中央駅前発</span>
+                    <input type="radio" name="busStop" value="seishinchuoekimae" id="seishinChuoEkiMaeRadio"> 西神中央駅前発
                 </label>
             </div>
         </div>
@@ -489,26 +442,7 @@
             { route: '28', time: '23:21', destinationCode: 'd' }
         ];
 
-        const holidayKasugadaiBusData = [
-            { route: '21', time: '5:56' }, { route: '21', time: '6:15' }, { route: '28', time: '6:30' },
-            { route: '28', time: '6:45' }, { route: '22', time: '7:08' }, { route: '21', time: '7:23' },
-            { route: '22', time: '7:38' }, { route: '21', time: '7:48' }, { route: '22', time: '7:53' },
-            { route: '22', time: '8:08' }, { route: '21', time: '8:14' }, { route: '22', time: '8:23' },
-            { route: '22', time: '8:38' }, { route: '22', time: '8:53' }, { route: '22', time: '9:08' },
-            { route: '21', time: '9:23' }, { route: '28', time: '9:40' }, { route: '22', time: '10:08' },
-            { route: '21', time: '10:23' }, { route: '28', time: '10:40' }, { route: '22', time: '11:08' },
-            { route: '21', time: '11:23' }, { route: '28', time: '11:40' }, { route: '22', time: '12:08' },
-            { route: '21', time: '12:23' }, { route: '28', time: '12:40' }, { route: '21', time: '13:02' },
-            { route: '22', time: '13:08' }, { route: '21', time: '13:23' }, { route: '28', time: '13:40' },
-            { route: '22', time: '14:08' }, { route: '21', time: '14:23' }, { route: '28', time: '14:40' },
-            { route: '22', time: '15:08' }, { route: '21', time: '15:23' }, { route: '28', time: '15:40' },
-            { route: '21', time: '16:11' }, { route: '21', time: '16:41' }, { route: '22', time: '17:11' },
-            { route: '22', time: '17:41' }, { route: '22', time: '18:11' }, { route: '22', time: '18:41' },
-            { route: '22', time: '19:11' }, { route: '22', time: '19:41' }, { route: '28', time: '21:07' },
-            { route: '22', time: '22:21' }
-        ];
-
-        // バス時刻データ (系統番号、時刻、行き先コード) - 西神中央駅前発 土日祝 (データ追加)
+        // バス時刻データ (系統番号、時刻、行き先コード) - 西神中央駅前発 土日祝
         const holidaySeishinChuoBusData = [
             { route: '28', time: '6:48', destinationCode: 'a' },
             { route: '28', time: '7:03', destinationCode: 'a' },
@@ -637,8 +571,8 @@
          */
         function getDestinationText(code) {
             switch (code) {
-                case 'a': return '西体育館行';
-                case 'b': return '西神中央駅前行';
+                case 'a': return '西体育館';
+                case 'b': return '西神中央駅前';
                 case 'c': return 'かすがプラザ止';
                 case 'd': return '春日台4丁目止';
                 default: return '';
@@ -697,19 +631,6 @@
         }
 
         /**
-         * 指示テキストを更新する関数
-         * @param {string} busStopType - 現在表示しているバス停のタイプ
-         */
-        function updateInstructionText(busStopType) {
-            const instructionTextElement = document.getElementById('instruction-text');
-            if (busStopType === 'kasugadai6chome') {
-                instructionTextElement.textContent = '春日台6丁目発のバス項目をタップ（クリック）すると、終点・西神中央駅前への到着時刻が表示されます。';
-            } else { // seishinchuoekimae
-                instructionTextElement.textContent = '西神中央駅前発のバス時刻表です。';
-            }
-        }
-
-        /**
          * 与えられた時刻データをもとに時刻表を生成・更新する関数
          * @param {Array<Object>} currentBusData - 表示するバスデータ
          * @param {string} busStopType - 現在表示しているバス停のタイプ ('kasugadai6chome' または 'seishinchuoekimae')
@@ -742,7 +663,7 @@
 
                 const hourTitle = document.createElement('h2');
                 hourTitle.classList.add('hour-title');
-                hourTitle.textContent = `${hour}時台`;
+                hourTitle.textContent = `${hour}時`;
                 hourGroupDiv.appendChild(hourTitle);
 
                 groupedBusData[hour].forEach(bus => {
@@ -782,7 +703,7 @@
                         // 春日台6丁目発のバスには常に「西神中央駅前行」の行き先を追加
                         const destinationDisplay = document.createElement('div');
                         destinationDisplay.classList.add('destination-display');
-                        destinationDisplay.textContent = '西神中央駅前行';
+                        destinationDisplay.textContent = '西神中央駅前行'; // 「行き先:」を削除
                         busItem.appendChild(destinationDisplay);
 
                         const arrivalTimeDisplay = document.createElement('div');
@@ -798,7 +719,7 @@
                     } else if (busStopType === 'seishinchuoekimae') {
                         const destinationDisplay = document.createElement('div');
                         destinationDisplay.classList.add('destination-display');
-                        destinationDisplay.textContent = getDestinationText(bus.destinationCode);
+                        destinationDisplay.textContent = getDestinationText(bus.destinationCode); // 「行き先:」を削除
                         busItem.appendChild(destinationDisplay);
                         // 西神中央駅前発のバス項目はクリックアクションがないため、カーソルはデフォルト
                         busItem.style.cursor = 'default';
@@ -850,21 +771,18 @@
                 currentActiveSchedule = 'weekday';
             }
 
-            // バス停のデフォルト選択（西神中央駅前をデフォルトとする）
-            seishinChuoEkiMaeRadio.checked = true;
-            currentBusStopType = 'seishinchuoekimae';
+            // バス停のデフォルト選択（春日台6丁目をデフォルトとする）
+            kasugadai6chomeRadio.checked = true;
+            currentBusStopType = 'kasugadai6chome';
 
-            // 初期時刻表の生成と指示テキストの更新
+            // 初期時刻表の生成
             generateTimetable(getSelectedBusData(), currentBusStopType);
-            updateInstructionText(currentBusStopType);
-
 
             // ラジオボタンの変更イベントリスナーを設定
             weekdayRadio.addEventListener('change', () => {
                 if (weekdayRadio.checked) {
                     currentActiveSchedule = 'weekday';
                     generateTimetable(getSelectedBusData(), currentBusStopType);
-                    updateInstructionText(currentBusStopType);
                 }
             });
 
@@ -872,7 +790,6 @@
                 if (holidayRadio.checked) {
                     currentActiveSchedule = 'holiday';
                     generateTimetable(getSelectedBusData(), currentBusStopType);
-                    updateInstructionText(currentBusStopType);
                 }
             });
 
@@ -880,7 +797,6 @@
                 if (kasugadai6chomeRadio.checked) {
                     currentBusStopType = 'kasugadai6chome';
                     generateTimetable(getSelectedBusData(), currentBusStopType);
-                    updateInstructionText(currentBusStopType);
                 }
             });
 
@@ -888,7 +804,6 @@
                 if (seishinChuoEkiMaeRadio.checked) {
                     currentBusStopType = 'seishinchuoekimae';
                     generateTimetable(getSelectedBusData(), currentBusStopType);
-                    updateInstructionText(currentBusStopType);
                 }
             });
 
