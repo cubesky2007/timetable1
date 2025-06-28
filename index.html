@@ -5,222 +5,319 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>バス時刻表</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#007bff"> <link rel="apple-touch-icon" href="icon.png"> </head>
-
+    <meta name="theme-color" content="#007bff">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* ベースフォントと背景色の調整 */
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8;
-            color: #333;
+            font-family: 'Shippori Mincho', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: hsl(240, 10%, 97%); /* 非常に薄い青みがかったグレー */
+            color: hsl(240, 10%, 20%); /* 落ち着いた濃いグレー */
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            padding: 20px;
+            min-height: 100vh; /* 少なくともビューポートの高さ */
+            padding: 10px; /* 全体のパディングを少し減らす */
             box-sizing: border-box;
         }
+
+        /* コンテナのスタイル調整 */
         .container {
-            background-color: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            background-color: hsl(0, 0%, 100%); /* 純粋な白 */
+            border-radius: 18px; /* さらに大きな角丸で優雅に */
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07); /* 柔らかく広がるシャドウ */
             max-width: 90%;
             width: 700px;
-            padding: 30px;
+            height: 98vh; /* ビューポートの高さに合わせて調整、さらに高さを確保 */
+            display: flex; /* Flexboxを有効にする */
+            flex-direction: column; /* 要素を縦に並べる */
+            padding: 20px; /* パディングを調整してスペースを節約 */
             text-align: center;
-            border: 1px solid #e2e8f0;
+            border: none;
         }
+
+        /* タイトルの調整 */
         h1 {
-            color: #2c5282;
-            font-size: 2.25rem; /* 36px */
+            color: hsl(240, 15%, 25%); /* 深いダークグレー/ブルー */
+            font-size: 2.1rem; /* さらに小さく */
             font-weight: 700;
-            margin-bottom: 20px;
+            margin-bottom: 12px; /* マージンをさらに減らす */
+            letter-spacing: 0.02em; /* わずかに字間を広げる */
         }
+
+        /* 説明文の調整 */
         .instruction-text {
-            font-size: 0.9rem;
-            color: #667eea; /* Indigo */
-            margin-bottom: 20px;
-            font-weight: 500;
+            font-size: 0.85rem; /* さらに小さく */
+            color: hsl(240, 5%, 45%); /* 落ち着いたミディアムグレー */
+            margin-bottom: 12px; /* マージンをさらに減らす */
+            font-weight: 400;
+            line-height: 1.4; /* 行の高さを調整 */
         }
+
+        /* セレクターグループの調整 */
         .selector-group {
-            margin-bottom: 25px;
+            margin-bottom: 15px; /* マージンをさらに減らす */
             display: flex;
-            flex-direction: column; /* Stack selectors vertically */
-            gap: 15px;
+            flex-direction: column;
+            gap: 10px; /* 間隔を調整 */
             align-items: center;
         }
+
         .schedule-selector, .bus-stop-selector {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 6px; /* ボタン間の間隔をさらに調整 */
             width: 100%;
-            max-width: 400px;
+            max-width: 400px; /* さらに狭くする */
+            background-color: transparent; 
+            box-shadow: none;
+            padding: 0;
         }
+
+        /* 平日/土日祝ボタンを横並びにする */
+        .schedule-selector {
+            flex-direction: row;
+        }
+
+        /* バス停選択ボタンは縦並びを維持し、横幅をさらに狭く */
+        .bus-stop-selector {
+            flex-direction: column;
+            max-width: 200px; /* 横幅をさらに狭く */
+        }
+
+
+        /* ラベル（ボタン部分）のスタイル調整 */
         .schedule-selector label, .bus-stop-selector label {
             display: flex;
             align-items: center;
-            font-size: 1.1rem; /* 18px */
-            font-weight: 600;
-            color: #2d3748;
+            justify-content: center;
+            flex-grow: 1; /* 幅を均等にする */
+            flex-basis: 0; /* flex-growが効果を発揮しやすいように */
+            font-size: 0.8rem; /* 最小限まで小さく */
+            font-weight: 500;
+            color: hsl(240, 10%, 35%); /* 落ち着いたグレー */
+            cursor: pointer;
+            padding: 6px 10px; /* パディングを最小限まで小さく */
+            border-radius: 10px; /* 角丸を調整 */
+            border: 1px solid hsl(240, 5%, 80%); /* 薄いボーダー */
+            background-color: hsl(0, 0%, 100%); /* 白い背景 */
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.015); /* より繊細なシャドウ */
+        }
+
+        .schedule-selector label:has(input[type="radio"]:checked),
+        .bus-stop-selector label:has(input[type="radio"]:checked) {
+            background-color: hsl(210, 80%, 40%); /* 深みのあるブルー */
+            border-color: hsl(210, 80%, 40%);
+            color: #ffffff;
+            box-shadow: 0 2px 6px hsla(210, 80%, 40%, 0.1); /* 強調シャドウ */
+        }
+
+        /* ラジオボタン自体の見た目をカスタマイズ */
+        .schedule-selector input[type="radio"], .bus-stop-selector input[type="radio"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            position: absolute;
+            opacity: 0;
             cursor: pointer;
         }
-        .schedule-selector input[type="radio"], .bus-stop-selector input[type="radio"] {
-            margin-right: 8px;
-            transform: scale(1.3); /* 大きめのラジオボタン */
-            accent-color: #3182ce; /* ハイライトカラー */
-        }
+
+        /* バスリストの調整 */
         .bus-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            max-height: 500px; /* Limit height for scrollability */
-            overflow-y: auto; /* Enable vertical scrolling */
-            padding-right: 10px; /* Space for scrollbar */
+            gap: 10px; /* 間隔を調整 */
+            flex-grow: 1; /* 親コンテナの残りのスペースを埋める */
+            overflow-y: auto; /* コンテンツが多すぎる場合にのみスクロール */
+            padding-right: 8px; /* スクロールバーのスペース */
+            margin-bottom: 0; /* 下部マージンをなくす */
         }
+
+        /* 時間グループの調整 */
         .hour-group {
-            background-color: #e0f2f7; /* Lighter blue for hour groups */
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid #a7d9ee;
+            background-color: hsl(240, 50%, 99.5%); /* ほぼ白の背景 */
+            border-radius: 10px; /* 角丸を調整 */
+            padding: 15px; /* パディングを調整 */
+            margin-bottom: 12px;
+            border: 1px solid hsl(240, 5%, 90%); /* 薄いボーダー */
             text-align: left;
-            scroll-margin-top: 20px; /* Space from top when scrolled to */
+            scroll-margin-top: 15px; /* スクロール時のマージン */
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.02); /* 柔らかいシャドウ */
         }
+
         .hour-title {
-            font-size: 1.5rem; /* 24px */
+            font-size: 1.4rem; /* さらに小さく */
             font-weight: 700;
-            color: #1e3a8a; /* Dark blue */
-            margin-bottom: 10px;
-            border-bottom: 2px solid #a7d9ee;
-            padding-bottom: 5px;
+            color: hsl(240, 15%, 28%); /* 濃いタイトル色 */
+            margin-bottom: 8px;
+            border-bottom: 1px solid hsl(240, 5%, 92%); /* より細いボーダー */
+            padding-bottom: 4px;
         }
+
+        /* バス項目の調整 */
         .bus-item {
             display: flex;
-            flex-direction: column; /* Allow vertical stacking for arrival/destination */
-            align-items: flex-start; /* Align content to start */
-            padding: 12px 15px;
-            background-color: #f7fafc;
-            border-radius: 10px;
-            border: 1px solid #e2e8f0;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 10px 15px; /* パディングを調整 */
+            background-color: hsl(0, 0%, 100%); /* 白い背景 */
+            border-radius: 8px; /* 角丸を調整 */
+            border: 1px solid hsl(240, 5%, 95%); /* 項目ボーダーをさらに薄く */
             transition: all 0.2s ease-in-out;
-            margin-bottom: 8px; /* Space between bus items */
+            margin-bottom: 6px; /* 間隔を調整 */
+            box-shadow: 0 0.5px 2px rgba(0, 0, 0, 0.01); /* 非常に繊細なシャドウ */
         }
-        .bus-item.clickable { /* For items with click action (arrival time) */
+
+        .bus-item.clickable {
             cursor: pointer;
         }
+
         .bus-item:last-child {
-            margin-bottom: 0; /* No margin for the last item in a group */
+            margin-bottom: 0;
         }
+
         .bus-item.upcoming {
-            background-color: #ebf8ff; /* Light blue */
-            border-color: #63b3ed; /* Stronger blue */
-            box-shadow: 0 4px 10px rgba(0, 128, 255, 0.15);
-            transform: translateY(-3px);
+            background-color: hsl(210, 100%, 96%); /* 明るい青 */
+            border-color: hsl(210, 80%, 70%); /* 少し濃い青 */
+            box-shadow: 0 3px 10px hsla(210, 80%, 45%, 0.12); /* アクセントカラーのシャドウ */
+            transform: translateY(-1px); /* 少し浮き上がる */
             font-weight: 600;
         }
+
         .bus-item.past {
             opacity: 0.6;
-            background-color: #edf2f7;
+            background-color: hsl(240, 5%, 96%); /* 過去のバスの背景色 */
         }
-        .bus-info { /* Wrapper for route and time */
+
+        .bus-info {
             display: flex;
             justify-content: space-between;
             align-items: center;
             width: 100%;
         }
+
         .bus-item-route {
-            font-size: 1.125rem; /* 18px */
-            font-weight: 700;
-            color: #2d3748;
-            width: 40%; /* Adjust width for better alignment */
+            font-size: 1rem; /* さらに小さく */
+            font-weight: 600;
+            color: hsl(240, 10%, 30%);
+            width: 40%;
             text-align: left;
         }
+
         .bus-item-time {
-            font-size: 1.5rem; /* 24px */
+            font-size: 1.4rem; /* さらに小さく */
             font-weight: 700;
-            color: #3182ce;
-            width: 60%; /* Adjust width for better alignment */
+            color: hsl(210, 80%, 45%); /* 深みのあるアクセントブルー */
+            width: 60%;
             text-align: right;
         }
+
         .arrival-time-display, .destination-display {
-            font-size: 0.95rem;
-            color: #4a5568;
-            font-weight: 500;
-            margin-top: 5px;
-            padding-top: 5px;
-            border-top: 1px dashed #cbd5e0;
+            font-size: 0.85rem; /* さらに小さく */
+            color: hsl(240, 5%, 55%); /* 落ち着いたグレー */
+            font-weight: 400;
+            margin-top: 6px; /* マージン調整 */
+            padding-top: 6px; /* パディング調整 */
+            border-top: 1px dashed hsl(240, 5%, 85%); /* 薄い点線 */
             width: 100%;
-            text-align: left; /* 行き先表示も右寄せに */
+            text-align: left;
             box-sizing: border-box;
         }
+        
         .arrival-time-display {
-            height: 0; /* Initially hidden with height 0 */
+            height: 0;
             overflow: hidden;
-            transition: all 0.3s ease-out; /* Smooth transition for height */
+            transition: all 0.3s ease-out;
         }
         .arrival-time-display.visible {
-            height: auto; /* Show content */
-            padding-top: 10px;
-            margin-top: 10px;
+            height: auto;
+            padding-top: 8px;
+            margin-top: 8px;
         }
         .arrival-time-display.hidden {
             padding-top: 0;
             margin-top: 0;
         }
 
-        /* Scrollbar styles for better aesthetics */
+        /* スクロールバーのスタイル */
         .bus-list::-webkit-scrollbar {
-            width: 8px;
+            width: 6px; /* スクロールバーを細く */
         }
         .bus-list::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: hsl(240, 10%, 97%); /* 背景色に合わせる */
             border-radius: 10px;
         }
         .bus-list::-webkit-scrollbar-thumb {
-            background: #888;
+            background: hsl(240, 5%, 80%); /* 少し明るいグレー */
             border-radius: 10px;
         }
         .bus-list::-webkit-scrollbar-thumb:hover {
-            background: #555;
+            background: hsl(240, 5%, 65%); /* ホバーで少し濃く */
         }
 
-        /* Responsive adjustments */
+        /* レスポンシブ調整 */
         @media (max-width: 640px) {
+            body {
+                padding: 5px;
+            }
             .container {
-                padding: 20px;
+                padding: 15px;
+                border-radius: 12px;
+                height: 98vh;
             }
             h1 {
-                font-size: 1.75rem; /* 28px */
+                font-size: 1.6rem; /* モバイルでさらに小さく */
+                margin-bottom: 8px;
             }
             .instruction-text {
-                font-size: 0.85rem;
+                font-size: 0.75rem; /* モバイルでさらに小さく */
+                margin-bottom: 10px;
             }
             .selector-group {
-                gap: 10px;
+                gap: 8px;
+                margin-bottom: 10px;
             }
-            .schedule-selector, .bus-stop-selector {
-                flex-direction: column;
-                gap: 10px;
+            /* モバイルでも平日/土日祝ボタンは横並びを維持し、さらにコンパクトに */
+            .schedule-selector {
+                flex-direction: row; /* 横並びを維持 */
+                gap: 13px; /* ボタン間の間隔をさらに詰める */
+                max-width: 180px; /* 全体として横幅を縮める */
             }
-            .schedule-selector label, .bus-stop-selector label {
-                font-size: 1rem;
+            .schedule-selector label {
+                font-size: 0.7rem; /* さらに小さく */
+                padding: 4px 6px; /* パディングを最小限まで小さく */
+                flex-basis: auto; /* コンテンツに合わせて幅を調整 */
+                flex-grow: 0; /* 伸びを無効にする */
+            }
+
+            .bus-stop-selector {
+                max-width: 160px; /* モバイルでも縦幅を維持しつつ調整 */
+            }
+            .bus-stop-selector label {
+                font-size: 0.75rem; /* モバイルでさらに小さく */
+                padding: 5px 8px; /* モバイルでさらにパディングを減らす */
             }
             .hour-title {
-                font-size: 1.25rem; /* 20px */
+                font-size: 1.2rem;
             }
             .bus-item {
-                padding: 10px 12px;
+                padding: 8px 10px;
+                border-radius: 6px;
             }
-            .bus-item-route, .bus-item-time {
-                width: 100%;
-                text-align: left;
-                margin-bottom: 4px; /* Adjust margin for stacked elements */
+            .bus-item-route {
+                font-size: 0.9rem;
             }
             .bus-item-time {
-                font-size: 1.2rem; /* 20px */
+                font-size: 1.2rem;
             }
             .arrival-time-display, .destination-display {
-                font-size: 0.9rem;
+                font-size: 0.75rem;
+                margin-top: 5px;
+                padding-top: 5px;
             }
         }
     </style>
@@ -233,10 +330,10 @@
         <div class="selector-group">
             <div class="schedule-selector">
                 <label>
-                    <input type="radio" name="scheduleType" value="weekday" id="weekdayRadio"> 平日
+                    <input type="radio" name="scheduleType" value="weekday" id="weekdayRadio"> 　⠀平日　⠀
                 </label>
                 <label>
-                    <input type="radio" name="scheduleType" value="holiday" id="holidayRadio"> 土日祝
+                    <input type="radio" name="scheduleType" value="holiday" id="holidayRadio"> 　土日祝　
                 </label>
             </div>
             <div class="bus-stop-selector">
@@ -250,12 +347,11 @@
         </div>
 
         <div id="bus-schedule" class="bus-list">
-            <!-- Bus schedule will be inserted here by JavaScript -->
-        </div>
+            </div>
     </div>
         
     <script>
-        // バス時刻データ (系統番号と時刻) - 春日台6丁目発
+        // Bus timetable data (route number and time) - departing from Kasugadai 6-chome
         const weekdayKasugadaiBusData = [
             { route: '21', time: '5:54' }, { route: '22', time: '6:06' }, { route: '21', time: '6:23' },
             { route: '28', time: '6:34' }, { route: '28', time: '6:44' }, { route: '28', time: '6:54' },
@@ -283,7 +379,6 @@
             { route: '22', time: '19:43' }, { route: '28', time: '19:48' }, { route: '22', time: '20:01' },
             { route: '28', time: '20:13' }, { route: '21', time: '21:18' }, { route: '28', time: '21:54' }
         ];
-
         const holidayKasugadaiBusData = [
             { route: '21', time: '5:56' }, { route: '21', time: '6:15' }, { route: '28', time: '6:30' },
             { route: '28', time: '6:45' }, { route: '22', time: '7:08' }, { route: '21', time: '7:23' },
@@ -302,7 +397,6 @@
             { route: '22', time: '19:11' }, { route: '22', time: '19:41' }, { route: '28', time: '21:07' },
             { route: '22', time: '22:21' }
         ];
-
         // バス時刻データ (系統番号、時刻、行き先コード) - 西神中央駅前発
         const weekdaySeishinChuoBusData = [
             { route: '22', time: '6:12', destinationCode: 'a' },
@@ -444,7 +538,6 @@
             { route: '22', time: '23:21', destinationCode: 'c' },
             { route: '28', time: '23:21', destinationCode: 'd' }
         ];
-
         // バス時刻データ (系統番号、時刻、行き先コード) - 西神中央駅前発 土日祝
         const holidaySeishinChuoBusData = [
             { route: '28', time: '6:48', destinationCode: 'a' },
@@ -564,18 +657,18 @@
             { route: '28', time: '22:40', destinationCode: 'd' }
         ];
 
-        let currentActiveSchedule = null; // 現在選択されている時刻表タイプ (weekday/holiday)
-        let currentBusStopType = null; // 現在選択されているバス停タイプ (kasugadai6chome/seishinchuoekimae)
+        let currentActiveSchedule = null; /* Current selected timetable type (weekday/holiday) */
+        let currentBusStopType = null; /* Current selected bus stop type (kasugadai6chome/seishinchuoekimae) */
 
         /**
-         * 行き先コードをテキストに変換する関数
-         * @param {string} code - 行き先コード (a, b, c, d)
-         * @returns {string} - 行き先の日本語テキスト
+         * Function to convert destination code to text
+         * @param {string} code - Destination code (a, b, c, d)
+         * @returns {string} - Japanese text of the destination
          */
         function getDestinationText(code) {
             switch (code) {
-                case 'a': return '西体育館';
-                case 'b': return '西神中央駅前';
+                case 'a': return '西体育館行';
+                case 'b': return '循環　西神中央駅前行';
                 case 'c': return 'かすがプラザ止';
                 case 'd': return '春日台4丁目止';
                 default: return '';
@@ -583,60 +676,59 @@
         }
 
         /**
-         * 到着時刻を計算する関数
-         * @param {string} departureTimeStr - 発車時刻 (例: "7:09")
-         * @param {string} route - 系統番号 (例: "21")
-         * @param {string} scheduleType - スケジュールタイプ ("weekday" または "holiday")
-         * @returns {string} - 到着時刻 (HH:MM形式)
+         * Function to calculate arrival time
+         * @param {string} departureTimeStr - Departure time (e.g., "7:09")
+         * @param {string} route - Route number (e.g., "21")
+         * @param {string} scheduleType - Schedule type ("weekday" or "holiday")
+         * @returns {string} - Arrival time (HH:MM format)
          */
         function calculateArrivalTime(departureTimeStr, route, scheduleType) {
             const [depHour, depMinute] = departureTimeStr.split(':').map(Number);
             let travelMinutes;
 
             if (scheduleType === 'weekday') {
-                // 平日: 午前9時を境に所要時間が変わる
-                if (depHour < 9) { // 午前9時（9:00）より前の発車
+                // Weekdays: travel time changes at 9 AM
+                if (depHour < 9) { // Departures before 9:00 AM
                     if (route === '21') travelMinutes = 13;
                     else if (route === '22') travelMinutes = 17;
                     else if (route === '28') travelMinutes = 16;
-                } else { // 午前9時（9:00）以降の発車
+                } else { // Departures after 9:00 AM
                     if (route === '21') travelMinutes = 13;
                     else if (route === '22') travelMinutes = 14;
                     else if (route === '28') travelMinutes = 13;
                 }
-            } else { // 土日祝
+            } else { // Weekends and holidays
                 if (route === '21') travelMinutes = 12;
                 else if (route === '22') travelMinutes = 14;
                 else if (route === '28') travelMinutes = 13;
             }
 
             let arrivalTotalMinutes = (depHour * 60 + depMinute) + travelMinutes;
-
             let arrHour = Math.floor(arrivalTotalMinutes / 60);
             let arrMinute = arrivalTotalMinutes % 60;
-
-            // 日付をまたぐ場合の時間を調整 (今回はバスの運行時間帯から24時を超えることは想定しないが、念のため)
+            // Adjust time if it crosses midnight (not expected for bus operating hours, but just in case)
             if (arrHour >= 24) arrHour -= 24;
-
             return `${arrHour.toString().padStart(2, '0')}:${arrMinute.toString().padStart(2, '0')}`;
         }
 
         /**
-         * 現在選択されている時刻表データ（平日/土日祝、バス停別）を取得するヘルパー関数
-         * @returns {Array<Object>} 選択されているバスデータ
+         * Helper function to get the currently selected bus data (weekday/holiday, by bus stop)
+         * @returns {Array<Object>} Selected bus data
          */
         function getSelectedBusData() {
             if (currentBusStopType === 'kasugadai6chome') {
-                return currentActiveSchedule === 'weekday' ? weekdayKasugadaiBusData : holidayKasugadaiBusData;
+                return currentActiveSchedule === 'weekday' ?
+                weekdayKasugadaiBusData : holidayKasugadaiBusData;
             } else { // currentBusStopType === 'seishinchuoekimae'
-                return currentActiveSchedule === 'weekday' ? weekdaySeishinChuoBusData : holidaySeishinChuoBusData;
+                return currentActiveSchedule === 'weekday' ?
+                weekdaySeishinChuoBusData : holidaySeishinChuoBusData;
             }
         }
 
         /**
-         * 与えられた時刻データをもとに時刻表を生成・更新する関数
-         * @param {Array<Object>} currentBusData - 表示するバスデータ
-         * @param {string} busStopType - 現在表示しているバス停のタイプ ('kasugadai6chome' または 'seishinchuoekimae')
+         * Function to generate/update the timetable based on the given time data
+         * @param {Array<Object>} currentBusData - Bus data to display
+         * @param {string} busStopType - Type of bus stop currently displayed ('kasugadai6chome' or 'seishinchuoekimae')
          */
         function generateTimetable(currentBusData, busStopType) {
             const now = new Date();
@@ -644,7 +736,7 @@
             const currentMinute = now.getMinutes();
 
             const scheduleContainer = document.getElementById('bus-schedule');
-            scheduleContainer.innerHTML = ''; // 既存の内容をクリア
+            scheduleContainer.innerHTML = ''; /* Clear existing content */
 
             const groupedBusData = {};
             currentBusData.forEach(bus => {
@@ -658,7 +750,6 @@
             let firstUpcomingBusElement = null;
 
             const sortedHours = Object.keys(groupedBusData).sort((a, b) => Number(a) - Number(b));
-
             sortedHours.forEach(hour => {
                 const hourGroupDiv = document.createElement('div');
                 hourGroupDiv.classList.add('hour-group');
@@ -698,17 +789,14 @@
                     busInfoDiv.appendChild(routeSpan);
                     busInfoDiv.appendChild(timeSpan);
                     busItem.appendChild(busInfoDiv);
-
-                    // バス停の種類によって表示内容とクリックイベントを分岐
+                    // Branch display content and click events depending on bus stop type
                     if (busStopType === 'kasugadai6chome') {
-                        busItem.classList.add('clickable'); // クリック可能であることを示すスタイル
-
-                        // 春日台6丁目発のバスには常に「西神中央駅前行」の行き先を追加
+                        busItem.classList.add('clickable');
+                        // For buses departing from Kasugadai 6-chome, always add "for Seishin-Chuo Station"
                         const destinationDisplay = document.createElement('div');
                         destinationDisplay.classList.add('destination-display');
-                        destinationDisplay.textContent = '西神中央駅前行'; // 「行き先:」を削除
+                        destinationDisplay.textContent = '西神中央駅前行';
                         busItem.appendChild(destinationDisplay);
-
                         const arrivalTimeDisplay = document.createElement('div');
                         arrivalTimeDisplay.classList.add('arrival-time-display', 'hidden');
                         busItem.appendChild(arrivalTimeDisplay);
@@ -722,9 +810,9 @@
                     } else if (busStopType === 'seishinchuoekimae') {
                         const destinationDisplay = document.createElement('div');
                         destinationDisplay.classList.add('destination-display');
-                        destinationDisplay.textContent = getDestinationText(bus.destinationCode); // 「行き先:」を削除
+                        destinationDisplay.textContent = getDestinationText(bus.destinationCode);
                         busItem.appendChild(destinationDisplay);
-                        // 西神中央駅前発のバス項目はクリックアクションがないため、カーソルはデフォルト
+                        // For buses departing from Seishin-Chuo Station, there is no click action, so the cursor is default
                         busItem.style.cursor = 'default';
                     }
 
@@ -734,19 +822,19 @@
                 scheduleContainer.appendChild(hourGroupDiv);
             });
 
-            // 最初の次のバスが見つかった場合、そこまでスクロール
+            // Scroll to the first upcoming bus if found
             if (firstUpcomingBusElement) {
                 setTimeout(() => {
                     firstUpcomingBusElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }, 100);
             } else if (currentBusData.length > 0) {
-                // 次のバスがない場合（例：終バス後）
+                // If no upcoming buses (e.g., after the last bus of the day)
                 const noUpcoming = document.createElement('div');
                 noUpcoming.classList.add('bus-item', 'text-gray-600', 'justify-center');
                 noUpcoming.textContent = '本日の運行は終了しました。';
                 scheduleContainer.appendChild(noUpcoming);
             } else {
-                 // バスデータが全くない場合
+                 // If there is no bus data at all
                 const noData = document.createElement('div');
                 noData.classList.add('bus-item', 'text-gray-600', 'justify-center');
                 noData.textContent = '表示するバスデータがありません。';
@@ -754,34 +842,32 @@
             }
         }
 
-        // 初期ロード時の処理
+        // Initial loading process
         window.onload = function() {
-            // ラジオボタン要素を取得
+            // Get radio button elements
             const weekdayRadio = document.getElementById('weekdayRadio');
             const holidayRadio = document.getElementById('holidayRadio');
             const kasugadai6chomeRadio = document.getElementById('kasugadai6chomeRadio');
             const seishinChuoEkiMaeRadio = document.getElementById('seishinChuoEkiMaeRadio');
-
-            // 現在の曜日を判定し、デフォルトで表示する時刻表の種類を選択
+            // Determine the current day of the week and select the default timetable type
             const today = new Date();
-            const dayOfWeek = today.getDay(); // 0:日, 1:月, ..., 6:土
+            const dayOfWeek = today.getDay(); // 0: Sunday, 1: Monday, ..., 6: Saturday
 
-            if (dayOfWeek === 0 || dayOfWeek === 6) { // 日曜日または土曜日
+            if (dayOfWeek === 0 || dayOfWeek === 6) { // Sunday or Saturday
                 holidayRadio.checked = true;
                 currentActiveSchedule = 'holiday';
-            } else { // 平日
+            } else { // Weekday
                 weekdayRadio.checked = true;
                 currentActiveSchedule = 'weekday';
             }
 
-            // バス停のデフォルト選択（西神中央駅前をデフォルトとする）
+            // Default bus stop selection (Seishin-Chuo Station as default)
             seishinChuoEkiMaeRadio.checked = true;
             currentBusStopType = 'seishinchuoekimae';
 
-            // 初期時刻表の生成
+            // Generate initial timetable
             generateTimetable(getSelectedBusData(), currentBusStopType);
-
-            // ラジオボタンの変更イベントリスナーを設定
+            // Set up change event listeners for radio buttons
             weekdayRadio.addEventListener('change', () => {
                 if (weekdayRadio.checked) {
                     currentActiveSchedule = 'weekday';
@@ -795,28 +881,25 @@
                     generateTimetable(getSelectedBusData(), currentBusStopType);
                 }
             });
-
             kasugadai6chomeRadio.addEventListener('change', () => {
                 if (kasugadai6chomeRadio.checked) {
                     currentBusStopType = 'kasugadai6chome';
                     generateTimetable(getSelectedBusData(), currentBusStopType);
                 }
             });
-
             seishinChuoEkiMaeRadio.addEventListener('change', () => {
                 if (seishinChuoEkiMaeRadio.checked) {
                     currentBusStopType = 'seishinchuoekimae';
                     generateTimetable(getSelectedBusData(), currentBusStopType);
                 }
             });
-
-            // 1分ごとに時刻表を更新
+            // Update timetable every minute
             setInterval(() => {
                 generateTimetable(getSelectedBusData(), currentBusStopType);
             }, 60 * 1000);
         };
     
-        // サービスワーカーの登録
+        // Service worker registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
@@ -828,9 +911,6 @@
                     });
             });
         }
-    </script>
-</body>
-</html>
     </script>
 </body>
 </html>
